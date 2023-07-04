@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -58,7 +55,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyBzV3sHDtq1odoXkhLM7oDedXj1AJTs0bk',
-    appId: '1:54310924554:android:2b17f1757a0f7b876c4af3',
+    appId: '1:54310924554:android:8c8e8c09b4cddb446c4af3',
     messagingSenderId: '54310924554',
     projectId: 'duma-commie',
     storageBucket: 'duma-commie.appspot.com',
@@ -70,7 +67,19 @@ class DefaultFirebaseOptions {
     messagingSenderId: '54310924554',
     projectId: 'duma-commie',
     storageBucket: 'duma-commie.appspot.com',
+    androidClientId: '54310924554-rgak7jf0592cbok2hufe7mq9k4e89uha.apps.googleusercontent.com',
     iosClientId: '54310924554-vfamioq995ucu6ma2on9kacd4oo4u602.apps.googleusercontent.com',
     iosBundleId: 'com.example.dumaland',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyClfFVsDVvaoxLbDU2e2S5O3i_kqKK5f78',
+    appId: '1:54310924554:ios:5e5cd96f6e365c266c4af3',
+    messagingSenderId: '54310924554',
+    projectId: 'duma-commie',
+    storageBucket: 'duma-commie.appspot.com',
+    androidClientId: '54310924554-rgak7jf0592cbok2hufe7mq9k4e89uha.apps.googleusercontent.com',
+    iosClientId: '54310924554-r6mf7oo27rvdhai1uk451h9p4glos46h.apps.googleusercontent.com',
+    iosBundleId: 'com.example.dumaland.RunnerTests',
   );
 }
