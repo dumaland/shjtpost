@@ -4,16 +4,22 @@ buildscript {
         google()
         mavenCentral()
     }
-
     dependencies {
+        classpath 'com.google.gms:google-services:+'
         classpath 'com.android.tools.build:gradle:7.3.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.3.15'
-
+        classpath 'com.google.gms:google-services:+'
         classpath 'com.google.firebase:perf-plugin:1.4.1'
-
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.8.1'
     }
+}
+
+plugins {
+  // ...
+
+  // Add the dependency for the Google services Gradle plugin
+  id("com.google.gms.google-services") version "4.3.15" apply false
+
 }
 
 allprojects {
@@ -33,17 +39,4 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
-}
-plugins {
-  // ...
-    id("com.android.application") version "7.2.0" apply false
-
-    // Make sure that you have the Google services Gradle plugin dependency
-    id("com.google.gms.google-services") version "4.3.15" apply false
-
-    // Add the dependency for the Performance Monitoring Gradle plugin
-    id("com.google.firebase.firebase-perf") version "1.4.2" apply false
-  // Add the dependency for the Google services Gradle plugin
-    id("com.google.gms.google-services") version "4.3.15" apply false
-
 }
