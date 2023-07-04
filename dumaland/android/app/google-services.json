@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "54310924554",
+    "project_id": "duma-commie",
+    "storage_bucket": "duma-commie.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:54310924554:android:2b17f1757a0f7b876c4af3",
+        "android_client_info": {
+          "package_name": "com.shjtpost.dumaland"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "54310924554-3ihl3kfvej79vhu20eeh014af0qn6r62.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzV3sHDtq1odoXkhLM7oDedXj1AJTs0bk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "54310924554-3ihl3kfvej79vhu20eeh014af0qn6r62.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
