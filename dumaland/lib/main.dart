@@ -5,7 +5,15 @@ import 'home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      appId: 'DUMA',
+      apiKey: 'AIzaSyBzV3sHDtq1odoXkhLM7oDedXj1AJTs0bk',
+      projectId: 'duma-commie',
+      messagingSenderId: '54310924554',
+      // ...other options
+    ),
+  );
   runApp(const MyApp());
 }
 
