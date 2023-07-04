@@ -70,12 +70,15 @@ flutter {
 
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation("com.google.firebase:firebase-perf-ktx")
 }
 plugins {
+    
   id("com.android.application")
 
   // Add the Google services Gradle plugin
   id("com.google.gms.google-services")
+  id("com.google.firebase.firebase-perf")
   // Import the Firebase BoM
   implementation(platform("com.google.firebase:firebase-bom:32.1.1"))
 
