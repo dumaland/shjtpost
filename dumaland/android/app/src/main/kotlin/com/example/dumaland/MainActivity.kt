@@ -1,4 +1,4 @@
-package com.example.dumaland
+package com.dumaland.shjtpost
 
 import io.flutter.embedding.android.FlutterActivity
 
