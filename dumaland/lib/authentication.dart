@@ -52,15 +52,13 @@ class AuthenticationService {
   // Check if email is already taken
   Future<bool> checkIfEmailTaken(String email) async {
     try {
-      final UserCredential? userCredential =
+      final UserCredential userCredential =
           await _firebaseAuth.createUserWithEmailAndPassword(
         email: email,
         password: 'temp_password',
       );
-      if (userCredential != null) {
-        await userCredential.user?.delete();
-        return false; // Email is available
-      }
+      await userCredential.user?.delete();
+      return false; 
     } catch (e) {
       print('Error: $e');
     }

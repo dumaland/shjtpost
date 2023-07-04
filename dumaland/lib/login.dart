@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'authentication.dart';
 
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -25,19 +27,19 @@ class _LoginPageState extends State<LoginPage> {
             Text(_isSignUp ? 'Signing Up' : 'Please Login to use our services'),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _emailController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Email',
               ),
             ),
             TextField(
               controller: _passwordController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Password',
               ),
               obscureText: true,
@@ -45,7 +47,7 @@ class _LoginPageState extends State<LoginPage> {
             if (_isSignUp) ...[
               TextField(
                 controller: _confirmPasswordController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Confirm Password',
                 ),
                 obscureText: true,
@@ -101,11 +103,11 @@ class _LoginPageState extends State<LoginPage> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Login Failed'),
-                          content: Text('Invalid email or password.'),
+                          title: const Text('Login Failed'),
+                          content: const Text('Invalid email or password.'),
                           actions: [
                             TextButton(
-                              child: Text('OK'),
+                              child: const Text('OK'),
                               onPressed: () {
                                 Navigator.of(context).pop();
                               },
@@ -122,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
             if (_errorMessage != null)
               Text(
                 _errorMessage!,
-                style: TextStyle(color: Colors.red),
+                style: const TextStyle(color: Colors.red),
               ),
             TextButton(
               onPressed: () {
@@ -148,11 +150,11 @@ class _LoginPageState extends State<LoginPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Sign Up Successful'),
-          content: Text('Please check your email and verify your account.'),
+          title: const Text('Sign Up Successful'),
+          content: const Text('Please check your email and verify your account.'),
           actions: [
             TextButton(
-              child: Text('OK'),
+              child: const Text('OK'),
               onPressed: () {
                 setState(() {
                   _isSignUp = false; // Navigate back to sign-in screen
