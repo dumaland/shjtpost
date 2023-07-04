@@ -71,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                           await _authenticationService.checkIfEmailTaken(email);
                       if (isEmailTaken) {
                         setState(() {
-                          _errorMessage = 'Email is already taken.';
+                          _errorMessage = 'Email is invalid.';
                         });
                       } else {
                         final String? uid = await _authenticationService
@@ -121,11 +121,13 @@ class _LoginPageState extends State<LoginPage> {
               },
               child: Text(_isSignUp ? 'Sign Up' : 'Login'),
             ),
-            if (_errorMessage != null)
-              Text(
-                _errorMessage!,
+            Visibility(
+              visible: _errorMessage != null,
+              child: Text(
+                _errorMessage ?? '',
                 style: const TextStyle(color: Colors.red),
               ),
+            ),
             TextButton(
               onPressed: () {
                 setState(() {
@@ -151,13 +153,15 @@ class _LoginPageState extends State<LoginPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Sign Up Successful'),
-          content: const Text('Please check your email and verify your account.'),
+          content:
+              const Text('Please check your email and verify your account.'),
           actions: [
             TextButton(
               child: const Text('OK'),
               onPressed: () {
                 setState(() {
                   _isSignUp = false; // Navigate back to sign-in screen
+                  _errorMessage = null; // Clear error message
                 });
                 Navigator.of(context).pop();
               },

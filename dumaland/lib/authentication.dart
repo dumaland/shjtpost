@@ -58,7 +58,7 @@ class AuthenticationService {
         password: 'temp_password',
       );
       await userCredential.user?.delete();
-      return false; 
+      return false;
     } catch (e) {
       print('Error: $e');
     }
