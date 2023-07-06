@@ -16,6 +16,7 @@ class HomePage extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await _authenticationService.signOut();
+              // ignore: use_build_context_synchronously
               Navigator.pushReplacementNamed(context, '/login');
             },
           ),
