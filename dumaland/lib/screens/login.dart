@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../logic/authentication.dart';
 import 'package:flutter/foundation.dart';
+import 'package:dumaland/shared/constant.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -54,26 +55,14 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextField(
                 controller: _emailController,
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black, width: 0.5)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                decoration: textinputdecorations.copyWith(
                   labelText: 'Email',
                 ),
               ),
               const SizedBox(height: 16.0),
               TextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black, width: 0.5)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                decoration: textinputdecorations.copyWith(
                   labelText: 'Password',
                 ),
                 obscureText: true,
@@ -82,14 +71,7 @@ class _LoginPageState extends State<LoginPage> {
               if (_isSignUp) ...[
                 TextField(
                   controller: _confirmPasswordController,
-                  decoration: const InputDecoration(
-                    filled: true,
-                    fillColor: Colors.white,
-                    enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            BorderSide(color: Colors.black, width: 0.5)),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                  decoration: textinputdecorations.copyWith(
                     labelText: 'Confirm Password',
                   ),
                   obscureText: true,
@@ -148,10 +130,8 @@ class _LoginPageState extends State<LoginPage> {
                     final String? uid = await _authenticationService
                         .signInWithEmailAndPassword(email, password);
                     if (uid != null) {
-                      // ignore: use_build_context_synchronously
                       Navigator.pushReplacementNamed(context, '/home');
                     } else {
-                      // ignore: use_build_context_synchronously
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -203,6 +183,18 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               //forgot password button
+              TextButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return EmailInputDialog();
+                    },
+                  );
+                },
+                child: const Text('I forgot my password',
+                    style: TextStyle(fontSize: 17)),
+              ),
             ],
           ),
         ),
@@ -222,16 +214,51 @@ class _LoginPageState extends State<LoginPage> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
-                setState(() {
-                  _isSignUp = false;
-                  _errorMessage = null;
-                });
                 Navigator.of(context).pop();
               },
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class EmailInputDialog extends StatelessWidget {
+  final TextEditingController _emailController = TextEditingController();
+  final AuthenticationService _authenticationService = AuthenticationService();
+
+  EmailInputDialog({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Recover your password'),
+      content: TextField(
+        controller: _emailController,
+        keyboardType: TextInputType.emailAddress,
+        decoration: textinputdecorations.copyWith(
+          labelText: 'Email',
+        ),
+      ),
+      actions: [
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: ElevatedButton(
+            onPressed: () async {
+              final String enteredEmail = _emailController.text;
+              await _authenticationService.resetPassword(enteredEmail);
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Please check your email'),
+                ),
+              );
+            },
+            child: const Text('Send password reset email'),
+          ),
+        ),
+      ],
     );
   }
 }

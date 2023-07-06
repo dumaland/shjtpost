@@ -65,7 +65,15 @@ class AuthenticationService {
     } catch (e) {
       logger.d('Error: $e');
     }
-    return true; // Email is already taken
+    return true;
   }
+
   //forgot password
+  Future<void> resetPassword(String email) async {
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: email);
+    } catch (e) {
+      logger.d('Error: $e');
+    }
+  }
 }
