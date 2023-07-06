@@ -23,8 +23,23 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:
-            Text(_isSignUp ? 'Signing Up' : 'Please Login to use our services'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings), // Replace with your desired icon
+            onPressed: () {
+              // Handle button press
+            },
+          ),
+        ],
+        leading: Image.asset('assets/images/mini-1.png'),
+        title: Text(
+          _isSignUp ? 'Signing Up' : 'Please Login to use our services',
+          style: const TextStyle(
+            fontSize: 20,
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
