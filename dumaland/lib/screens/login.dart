@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/authentication.dart';
+import 'dart:io';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,8 +42,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -121,7 +121,7 @@ class _LoginPageState extends State<LoginPage> {
                       builder: (BuildContext context) {
                         return AlertDialog(
                           title: const Text('Login Failed'),
-                          content: const Text('Invalid email or password.'),
+                          content: const Text('Check your email or password.'),
                           actions: [
                             TextButton(
                               child: const Text('OK'),
@@ -145,11 +145,12 @@ class _LoginPageState extends State<LoginPage> {
                 style: const TextStyle(color: Colors.red),
               ),
             ),
+            //sign up button
             TextButton(
               onPressed: () {
                 setState(() {
                   _isSignUp = !_isSignUp;
-                  _errorMessage = null; // Clear error message
+                  _errorMessage = null;
                 });
               },
               child: Text(
