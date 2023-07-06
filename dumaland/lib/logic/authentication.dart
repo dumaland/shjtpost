@@ -1,7 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:logger/logger.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final Logger logger = Logger(
+    printer: PrettyPrinter(),
+  );
 
   // Sign in with email and password
   Future<String?> signInWithEmailAndPassword(
@@ -14,12 +18,11 @@ class AuthenticationService {
         if (user.emailVerified) {
           return user.uid;
         } else {
-          await _firebaseAuth.signOut(); // Sign out the user
-          throw 'Email not verified. Please check your email and verify your account.';
+          await _firebaseAuth.signOut();
         }
       }
     } catch (e) {
-      print('Error: $e');
+      logger.d('Error: $e');
     }
     return null;
   }
@@ -44,7 +47,7 @@ class AuthenticationService {
         return user.uid;
       }
     } catch (e) {
-      print('Error: $e');
+      logger.d('Error: $e');
     }
     return null;
   }
@@ -60,7 +63,7 @@ class AuthenticationService {
       await userCredential.user?.delete();
       return false;
     } catch (e) {
-      print('Error: $e');
+      logger.d('Error: $e');
     }
     return true; // Email is already taken
   }
