@@ -97,8 +97,10 @@ class _LoginPageState extends State<LoginPage> {
                   final String? uid = await _authenticationService
                       .signInWithEmailAndPassword(email, password);
                   if (uid != null) {
+                    // ignore: use_build_context_synchronously
                     Navigator.pushReplacementNamed(context, '/home');
                   } else {
+                    // ignore: use_build_context_synchronously
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
