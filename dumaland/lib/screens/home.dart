@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'authentication_logic.dart';
+import '../logic/authentication.dart';
 
 class HomePage extends StatelessWidget {
   final AuthenticationService _authenticationService = AuthenticationService();
