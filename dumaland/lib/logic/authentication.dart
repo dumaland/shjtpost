@@ -64,4 +64,5 @@ class AuthenticationService {
     }
     return true; // Email is already taken
   }
+  //forgot password
 }

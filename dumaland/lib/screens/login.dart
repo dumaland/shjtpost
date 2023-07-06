@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../logic/authentication.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,6 +24,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.blue[200],
         actions: [
           IconButton(
             icon: const Icon(Icons.settings), // Replace with your desired icon
@@ -32,7 +33,7 @@ class _LoginPageState extends State<LoginPage> {
             },
           ),
         ],
-        leading: Image.asset('assets/images/mini-5.png'),
+        leading: Image.asset('assets/imgs/mini-5.png'),
         title: Text(
           _isSignUp ? 'Signing Up' : 'Please Login to use our services',
           style: const TextStyle(
@@ -42,124 +43,168 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(
-                labelText: 'Password',
-              ),
-              obscureText: true,
-            ),
-            if (_isSignUp) ...[
+      body: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: SizedBox(
+          width: kIsWeb
+              ? MediaQuery.of(context).size.width * 0.3
+              : MediaQuery.of(context).size.width,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
               TextField(
-                controller: _confirmPasswordController,
+                controller: _emailController,
                 decoration: const InputDecoration(
-                  labelText: 'Confirm Password',
+                  filled: true,
+                  fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black, width: 0.5)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                  labelText: 'Email',
+                ),
+              ),
+              const SizedBox(height: 16.0),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white,
+                  enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.black, width: 0.5)),
+                  focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                  labelText: 'Password',
                 ),
                 obscureText: true,
               ),
-            ],
-            ElevatedButton(
-              onPressed: () async {
-                final String email = _emailController.text.trim();
-                final String password = _passwordController.text;
+              const SizedBox(height: 16.0),
+              if (_isSignUp) ...[
+                TextField(
+                  controller: _confirmPasswordController,
+                  decoration: const InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    enabledBorder: OutlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.black, width: 0.5)),
+                    focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.blue, width: 2.0)),
+                    labelText: 'Confirm Password',
+                  ),
+                  obscureText: true,
+                ),
+              ],
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.blue, // Set the button's text color
+                  elevation: 4, // Set the button's elevation
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16.0,
+                      horizontal: 32.0), // Adjust the button's padding
+                ),
+                onPressed: () async {
+                  final String email = _emailController.text.trim();
+                  final String password = _passwordController.text;
 
-                if (_isSignUp) {
-                  final String confirmPassword =
-                      _confirmPasswordController.text;
-                  if (password == confirmPassword) {
-                    if (password.length < 6) {
-                      setState(() {
-                        _errorMessage = 'Password is too short.';
-                      });
-                    } else {
-                      final bool isEmailTaken =
-                          await _authenticationService.checkIfEmailTaken(email);
-                      if (isEmailTaken) {
+                  if (_isSignUp) {
+                    final String confirmPassword =
+                        _confirmPasswordController.text;
+                    if (password == confirmPassword) {
+                      if (password.length < 6) {
                         setState(() {
-                          _errorMessage = 'Email is invalid.';
+                          _errorMessage = 'Password is too short.';
                         });
                       } else {
-                        final String? uid = await _authenticationService
-                            .signUpWithEmailAndPassword(
-                          email,
-                          password,
-                        );
-                        if (uid != null) {
-                          _showSignUpSuccessDialog();
-                        } else {
+                        final bool isEmailTaken = await _authenticationService
+                            .checkIfEmailTaken(email);
+                        if (isEmailTaken) {
                           setState(() {
-                            _errorMessage = 'Failed to sign up.';
+                            _errorMessage = 'Email is invalid.';
                           });
+                        } else {
+                          final String? uid = await _authenticationService
+                              .signUpWithEmailAndPassword(
+                            email,
+                            password,
+                          );
+                          if (uid != null) {
+                            _showSignUpSuccessDialog();
+                          } else {
+                            setState(() {
+                              _errorMessage = 'Failed to sign up.';
+                            });
+                          }
                         }
                       }
+                    } else {
+                      setState(() {
+                        _errorMessage = 'Passwords do not match.';
+                      });
                     }
                   } else {
-                    setState(() {
-                      _errorMessage = 'Passwords do not match.';
-                    });
+                    final String? uid = await _authenticationService
+                        .signInWithEmailAndPassword(email, password);
+                    if (uid != null) {
+                      // ignore: use_build_context_synchronously
+                      Navigator.pushReplacementNamed(context, '/home');
+                    } else {
+                      // ignore: use_build_context_synchronously
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: const Text('Login Failed'),
+                            content:
+                                const Text('Check your email or password.'),
+                            actions: [
+                              TextButton(
+                                child: const Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   }
-                } else {
-                  final String? uid = await _authenticationService
-                      .signInWithEmailAndPassword(email, password);
-                  if (uid != null) {
-                    // ignore: use_build_context_synchronously
-                    Navigator.pushReplacementNamed(context, '/home');
-                  } else {
-                    // ignore: use_build_context_synchronously
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return AlertDialog(
-                          title: const Text('Login Failed'),
-                          content: const Text('Check your email or password.'),
-                          actions: [
-                            TextButton(
-                              child: const Text('OK'),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  }
-                }
-              },
-              child: Text(_isSignUp ? 'Sign Up' : 'Login'),
-            ),
-            Visibility(
-              visible: _errorMessage != null,
-              child: Text(
-                _errorMessage ?? '',
-                style: const TextStyle(color: Colors.red),
+                },
+                child: Text(
+                  _isSignUp ? 'Sign Up' : 'Login',
+                  style: const TextStyle(
+                    fontSize: 20,
+                  ),
+                ),
               ),
-            ),
-            //sign up button
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _isSignUp = !_isSignUp;
-                  _errorMessage = null;
-                });
-              },
-              child: Text(
-                _isSignUp
-                    ? 'Already have an account/Sign in'
-                    : 'Create a new account',
+              Visibility(
+                visible: _errorMessage != null,
+                child: Text(
+                  _errorMessage ?? '',
+                  style: const TextStyle(color: Colors.red, fontSize: 20),
+                ),
               ),
-            ),
-          ],
+              //sign up button
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _isSignUp = !_isSignUp;
+                    _errorMessage = null;
+                  });
+                },
+                child: Text(
+                  _isSignUp
+                      ? 'Already have an account/Sign in'
+                      : 'Create a new account',
+                  style: const TextStyle(fontSize: 17),
+                ),
+              ),
+              //forgot password button
+            ],
+          ),
         ),
       ),
     );
@@ -178,8 +223,8 @@ class _LoginPageState extends State<LoginPage> {
               child: const Text('OK'),
               onPressed: () {
                 setState(() {
-                  _isSignUp = false; // Navigate back to sign-in screen
-                  _errorMessage = null; // Clear error message
+                  _isSignUp = false;
+                  _errorMessage = null;
                 });
                 Navigator.of(context).pop();
               },
