@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../logic/authentication.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dumaland/shared/constant.dart';
+import 'package:lottie/lottie.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -34,7 +35,9 @@ class _LoginPageState extends State<LoginPage> {
             },
           ),
         ],
-        leading: Image.asset('assets/imgs/mini-5.png'),
+        leading: Lottie.network(
+          'https://assets6.lottiefiles.com/packages/lf20_jpxsQh.json',
+        ),
         title: Text(
           _isSignUp ? 'Signing Up' : 'Please Login to use our services',
           style: const TextStyle(
@@ -54,7 +57,11 @@ class _LoginPageState extends State<LoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset('assets/imgs/mini-1.png'),
+                Lottie.network(
+                  'https://assets1.lottiefiles.com/packages/lf20_a2chheio.json',
+                  width: 200,
+                  height: 200,
+                ),
                 TextField(
                   controller: _emailController,
                   decoration: textinputdecorations.copyWith(

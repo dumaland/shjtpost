@@ -11,7 +11,6 @@ void main() async {
       apiKey: 'AIzaSyBzV3sHDtq1odoXkhLM7oDedXj1AJTs0bk',
       projectId: 'duma-commie',
       messagingSenderId: '54310924554',
-      // ...other options
     ),
   );
   runApp(const MyApp());
@@ -23,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Login App',
+      title: 'Duma Land',
       initialRoute: '/',
       routes: {
         '/': (context) => const LoginPage(),
