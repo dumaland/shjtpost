@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
             },
           ),
         ],
-        leading: Image.asset('assets/images/mini-1.png'),
+        leading: Image.asset('assets/images/mini-5.png'),
         title: Text(
           _isSignUp ? 'Signing Up' : 'Please Login to use our services',
           style: const TextStyle(
