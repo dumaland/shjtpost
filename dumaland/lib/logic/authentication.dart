@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -8,10 +9,7 @@ class AuthenticationService {
   final Logger logger = Logger(
     printer: PrettyPrinter(),
   );
-  //Auth state
-  AuthenticationService() {
-    _firebaseAuth.setPersistence(Persistence.LOCAL);
-  }
+
   // Sign in with Google
   Future<String?> signInWithGoogle() async {
     try {
@@ -48,6 +46,8 @@ class AuthenticationService {
       final User? user = userCredential.user;
       if (user != null) {
         if (user.emailVerified) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', user.uid);
           return user.uid;
         } else {
           await _firebaseAuth.signOut();
@@ -62,6 +62,8 @@ class AuthenticationService {
   // Sign out
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('userId');
   }
 
   // Sign up with email and password
