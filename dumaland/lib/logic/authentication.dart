@@ -8,7 +8,10 @@ class AuthenticationService {
   final Logger logger = Logger(
     printer: PrettyPrinter(),
   );
-
+  //Auth state
+  AuthenticationService() {
+    _firebaseAuth.setPersistence(Persistence.LOCAL);
+  }
   // Sign in with Google
   Future<String?> signInWithGoogle() async {
     try {
