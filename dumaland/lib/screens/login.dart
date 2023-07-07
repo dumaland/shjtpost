@@ -17,6 +17,13 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final AuthenticationService _authenticationService = AuthenticationService();
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
 
   bool _isSignUp = false;
 
@@ -67,6 +74,9 @@ class _LoginPageState extends State<LoginPage> {
                   decoration: textinputdecorations.copyWith(
                     labelText: 'Email',
                   ),
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  enableSuggestions: false,
                 ),
                 const SizedBox(height: 16.0),
                 TextField(
@@ -75,6 +85,8 @@ class _LoginPageState extends State<LoginPage> {
                     labelText: 'Password',
                   ),
                   obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
                 ),
                 const SizedBox(height: 16.0),
                 if (_isSignUp) ...[
@@ -83,6 +95,8 @@ class _LoginPageState extends State<LoginPage> {
                     decoration: textinputdecorations.copyWith(
                       labelText: 'Confirm Password',
                     ),
+                    autocorrect: false,
+                    enableSuggestions: false,
                     obscureText: true,
                   ),
                 ],
@@ -99,43 +113,31 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () async {
                     final String email = _emailController.text.trim();
                     final String password = _passwordController.text;
+                    final String confirmPassword =
+                        _confirmPasswordController.text;
 
                     if (_isSignUp) {
-                      final String confirmPassword =
-                          _confirmPasswordController.text;
-                      if (password == confirmPassword) {
-                        if (password.length < 6) {
-                          setState(() {
-                            _errorMessage = 'Password is too short.';
-                          });
+                      if (password != confirmPassword) {
+                        _errorMessage = 'Passwords do not match.';
+                      } else if (password.length < 6) {
+                        _errorMessage = 'Password is too short.';
+                      } else {
+                        final bool isEmailTaken = await _authenticationService
+                            .checkIfEmailTaken(email);
+                        if (isEmailTaken) {
+                          _errorMessage = 'Email is invalid.';
                         } else {
-                          final bool isEmailTaken = await _authenticationService
-                              .checkIfEmailTaken(email);
-                          if (isEmailTaken) {
-                            setState(() {
-                              _errorMessage = 'Email is invalid.';
-                            });
+                          final String? uid = await _authenticationService
+                              .signUpWithEmailAndPassword(email, password);
+                          if (uid != null) {
+                            _showSignUpSuccessDialog();
                           } else {
-                            final String? uid = await _authenticationService
-                                .signUpWithEmailAndPassword(
-                              email,
-                              password,
-                            );
-                            if (uid != null) {
-                              _showSignUpSuccessDialog();
-                            } else {
-                              setState(() {
-                                _errorMessage = 'Failed to sign up.';
-                              });
-                            }
+                            _errorMessage = 'Failed to sign up.';
                           }
                         }
-                      } else {
-                        setState(() {
-                          _errorMessage = 'Passwords do not match.';
-                        });
                       }
                     } else {
+                      final BuildContext dialogContext = context;
                       final String? uid = await _authenticationService
                           .signInWithEmailAndPassword(email, password);
                       if (uid != null) {
@@ -144,7 +146,7 @@ class _LoginPageState extends State<LoginPage> {
                       } else {
                         // ignore: use_build_context_synchronously
                         showDialog(
-                          context: context,
+                          context: dialogContext,
                           builder: (BuildContext context) {
                             return AlertDialog(
                               title: const Text('Login Failed'),
@@ -154,7 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                                 TextButton(
                                   child: const Text('OK'),
                                   onPressed: () {
-                                    Navigator.of(context).pop();
+                                    Navigator.of(dialogContext).pop();
                                   },
                                 ),
                               ],
@@ -162,6 +164,11 @@ class _LoginPageState extends State<LoginPage> {
                           },
                         );
                       }
+                    }
+                    if (_errorMessage != null) {
+                      setState(() {
+                        _errorMessage = _errorMessage;
+                      });
                     }
                   },
                   child: Text(
