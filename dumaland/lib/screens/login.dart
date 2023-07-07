@@ -39,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
           'https://assets6.lottiefiles.com/packages/lf20_jpxsQh.json',
         ),
         title: Text(
-          _isSignUp ? 'Signing Up' : 'Please Login to use our services',
+          _isSignUp ? 'Signing Up' : 'Welcome to WjbuVerse',
           style: const TextStyle(
             fontSize: 20,
             color: Colors.white,
@@ -274,15 +274,42 @@ class EmailInputDialog extends StatelessWidget {
           child: ElevatedButton(
             onPressed: () async {
               final String enteredEmail = _emailController.text;
-              await _authenticationService.resetPassword(enteredEmail);
-              // ignore: use_build_context_synchronously
-              Navigator.of(context).pop();
-              // ignore: use_build_context_synchronously
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Please check your email'),
-                ),
-              );
+              final bool isEmailTaken =
+                  await _authenticationService.checkIfEmailTaken(enteredEmail);
+              if (isEmailTaken) {
+                await _authenticationService.resetPassword(enteredEmail);
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pop();
+                // ignore: use_build_context_synchronously
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please check your email'),
+                  ),
+                );
+              } else {
+                // ignore: use_build_context_synchronously
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text('Email not found'),
+                      content: const Text(
+                          'No user found with this email, please check again'),
+                      actions: [
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text('Close'),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
             },
             child: const Text('Send password reset email'),
           ),
