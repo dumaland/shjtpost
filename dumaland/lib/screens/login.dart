@@ -195,19 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                     style: const TextStyle(fontSize: 17),
                   ),
                 ),
-
-                //sign in with google account
-                // ElevatedButton(
-                //   onPressed: () async {
-                //     final String? uid =
-                //         await _authenticationService.signInWithGoogle();
-                //     if (uid != null) {
-                //       Navigator.pushReplacementNamed(context, '/home');
-                //     }
-                //   },
-                //   child: const Text('Sign in with Google'),
-                // ),
-
                 //forgot password button
                 TextButton(
                   onPressed: () {
