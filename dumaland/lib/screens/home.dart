@@ -12,7 +12,10 @@ class HomePage extends StatelessWidget {
     // Use the user object to display user-specific content
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: Text(
+          'Welcome ${user?.displayName ?? ''}',
+          style: TextStyle(fontSize: 24),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
@@ -26,12 +29,12 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              'Welcome ${user?.displayName ?? ''}',
+              'Adu vjp',
               style: TextStyle(fontSize: 24),
             ),
           ],
