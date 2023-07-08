@@ -124,12 +124,12 @@ class _LoginPageState extends State<LoginPage> {
                       } else {
                         final bool isEmailTaken = await _authenticationService
                             .checkIfEmailTaken(email);
-                        if (isEmailTaken) {
+                        if (!isEmailTaken) {
                           _errorMessage = 'Email is invalid.';
                         } else {
-                          final String? uid = await _authenticationService
+                          final bool success = await _authenticationService
                               .signUpWithEmailAndPassword(email, password);
-                          if (uid != null) {
+                          if (success) {
                             _showSignUpSuccessDialog();
                           } else {
                             _errorMessage = 'Failed to sign up.';
@@ -235,6 +235,9 @@ class _LoginPageState extends State<LoginPage> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
+                setState(() {
+                  _isSignUp = false;
+                });
                 Navigator.of(context).pop();
               },
             ),

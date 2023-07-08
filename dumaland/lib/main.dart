@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 
@@ -30,18 +29,6 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    checkLoggedInStatus();
-  }
-
-  Future<void> checkLoggedInStatus() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
-
-    if (userId != null) {
-      setState(() {
-        isLoggedIn = true;
-      });
-    }
   }
 
   @override
