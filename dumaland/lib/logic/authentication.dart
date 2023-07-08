@@ -1,8 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:logger/logger.dart';
+import 'package:dumaland/logic/data.dart';
 
 class AuthenticationService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+  final DatabaseService _databaseService = DatabaseService();
   final Logger logger = Logger(
     printer: PrettyPrinter(),
   );
@@ -32,7 +34,7 @@ class AuthenticationService {
     await _firebaseAuth.signOut();
   }
 
-  // Sign up with email and password
+// Sign up with email and password
   Future<bool> signUpWithEmailAndPassword(String email, String password) async {
     try {
       final UserCredential userCredential =
@@ -43,6 +45,8 @@ class AuthenticationService {
       final User? user = userCredential.user;
       if (user != null) {
         await user.sendEmailVerification(); // Send email verification
+        const String name = 'Change ur name in settings';
+        await _databaseService.addUser(user.uid, email, password, name);
         return true;
       }
     } catch (e) {
