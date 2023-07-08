@@ -45,7 +45,7 @@ class AuthenticationService {
       final User? user = userCredential.user;
       if (user != null) {
         await user.sendEmailVerification(); // Send email verification
-        const String name = 'Change ur name in settings';
+        const String name = 'Change ur name and avatar in settings';
         await _databaseService.addUser(user.uid, email, password, name);
         return true;
       }
