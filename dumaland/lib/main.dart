@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'logic/authentication.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +16,8 @@ void main() async {
       messagingSenderId: '54310924554',
     ),
   );
-  runApp(const MyApp());
+  final sharedPreferences = await SharedPreferences.getInstance();
+  runApp(MyApp());
 }
 
 class MyApp extends StatefulWidget {
@@ -26,53 +29,54 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   bool isLoggedIn = false;
-  late User? currentUser;
+  User? currentUser;
+  late AuthenticationService authService;
+
   @override
   void initState() {
     super.initState();
-    initializeFirebase();
+    authService = AuthenticationService();
+    authService.initialize().then((_) {
+      setState(() {
+        isLoggedIn = authService.getLoginStatus();
+      });
+    });
     checkLoggedInStatus();
   }
 
-  // Initialize Firebase
-  void initializeFirebase() async {
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        appId: 'DUMA',
-        apiKey: 'AIzaSyBzV3sHDtq1odoXkhLM7oDedXj1AJTs0bk',
-        projectId: 'duma-commie',
-        messagingSenderId: '54310924554',
-      ),
-    );
-  }
-
-  // Check if user is logged in
   void checkLoggedInStatus() {
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
       if (user != null) {
         setState(() {
           isLoggedIn = true;
           currentUser = user;
+          authService
+              .saveLoginStatus(true); // Store login status in SharedPreferences
         });
       } else {
         setState(() {
           isLoggedIn = false;
           currentUser = null;
+          authService.saveLoginStatus(
+              false); // Store login status in SharedPreferences
         });
       }
     });
+  }
+
+  bool getLoginStatus() {
+    return authService.getLoginStatus();
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Duma Land',
-      initialRoute: isLoggedIn ? '/home' : '/login',
+      initialRoute: getLoginStatus() ? '/home' : '/login',
       routes: {
         '/': (context) => const LoginPage(),
         '/login': (context) => const LoginPage(),
-        '/home': (context) =>
-            HomePage(user: currentUser), // Pass the current user to HomePage
+        '/home': (context) => HomePage(user: currentUser),
       },
     );
   }
