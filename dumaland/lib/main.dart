@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'logic/authentication.dart';
 import 'screens/login.dart';
 import 'screens/home.dart';
@@ -16,8 +15,7 @@ void main() async {
       messagingSenderId: '54310924554',
     ),
   );
-  final sharedPreferences = await SharedPreferences.getInstance();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {

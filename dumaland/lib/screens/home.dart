@@ -179,6 +179,7 @@ class _HomePageState extends State<HomePage> {
                     height: 50,
                   ),
           ),
+          const Drawer(),
         ],
       ),
       body: const Center(
