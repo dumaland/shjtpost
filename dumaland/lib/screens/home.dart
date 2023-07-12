@@ -1,3 +1,4 @@
+import 'package:dumaland/screens/loading.dart';
 import 'package:dumaland/screens/profile.dart';
 import 'package:dumaland/screens/search.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:lottie/lottie.dart';
 import 'package:dumaland/shared/constant.dart';
 import 'package:dumaland/logic/data.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
 
 class HomePage extends StatefulWidget {
@@ -22,15 +24,36 @@ class _HomePageState extends State<HomePage> {
   final AuthenticationService _authenticationService = AuthenticationService();
   final DatabaseService _databaseService = DatabaseService();
   PlatformFile? pickedfile;
+  Stream<QuerySnapshot>? groupStream;
   String? userName;
   String? avatarUrl;
+  List<String> groups = [];
   File? selectedImage;
+  File? groupAvatar;
   final TextEditingController _nameController = TextEditingController();
+  Stream? group;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     loadUserInfo();
+    getUserGroups();
+    refreshGroups();
+  }
+
+  Future<void> refreshGroups() async {
+    if (widget.user != null) {
+      final uid = widget.user!.uid;
+      final userGroups = await _databaseService.getUserGroups(uid);
+      setState(() {
+        groupStream = FirebaseFirestore.instance
+            .collection('groups')
+            .where('members', arrayContains: uid)
+            .snapshots();
+        groups = userGroups;
+      });
+    }
   }
 
   void _openDrawer(BuildContext context) {
@@ -45,6 +68,16 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         userName = name;
         avatarUrl = userAvatarUrl;
+      });
+    }
+  }
+
+  Future<void> getUserGroups() async {
+    if (widget.user != null) {
+      final uid = widget.user!.uid;
+      final userGroups = await _databaseService.getUserGroups(uid);
+      setState(() {
+        groups = userGroups;
       });
     }
   }
@@ -69,7 +102,7 @@ class _HomePageState extends State<HomePage> {
         ),
         backgroundColor: Colors.blue[200],
         title: const Text(
-          'Wjbu Verse',
+          'Chat rooms',
           style: TextStyle(fontSize: 24),
         ),
         actions: [
@@ -202,8 +235,7 @@ class _HomePageState extends State<HomePage> {
           child: ListView(
         padding: const EdgeInsets.symmetric(vertical: 0),
         children: <Widget>[
-          Lottie.network(
-              'https://lottie.host/9b8518cb-417e-4f50-bef7-e8109642573d/dnrWvzAvij.json'),
+          Lottie.asset('assets/imgs/nyancat.json'),
           Text(
             userName != "Change ur name and avatar in settings"
                 ? 'Welcome ${userName ?? ''}'
@@ -256,17 +288,176 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       )),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Adu vjp',
-              style: TextStyle(fontSize: 24),
-            ),
-          ],
+      body: _isLoading ? const LoadingScreen() : groupList(),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          popUpDialog(context);
+        },
+        elevation: 0,
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
         ),
       ),
     );
+  }
+
+  Widget groupList() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: groupStream,
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Error');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const LoadingScreen();
+        }
+
+        final List<Widget> groupTiles = [];
+
+        for (var document in snapshot.data!.docs) {
+          final groupId = document.id;
+
+          final tile = FutureBuilder<Map<String, dynamic>?>(
+            future: _databaseService.getGroupInfo(groupId),
+            builder: (BuildContext context,
+                AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const LoadingScreen();
+              }
+
+              if (snapshot.hasData) {
+                final groupName = snapshot.data?['name'] as String?;
+                final avatarUrl = snapshot.data?['avatarUrl'] as String?;
+
+                return Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      radius: 25,
+                      backgroundImage: NetworkImage(avatarUrl ?? ''),
+                    ),
+                    title: Text(
+                      groupName ?? '',
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    onTap: () {
+                      // Handle group tile onTap action using the groupId, groupName, and avatarUrl
+                    },
+                  ),
+                );
+              } else {
+                return const Text('Error');
+              }
+            },
+          );
+
+          groupTiles.add(tile);
+        }
+
+        return ListView(
+          padding: const EdgeInsets.all(8),
+          children: groupTiles,
+        );
+      },
+    );
+  }
+
+  void popUpDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final TextEditingController groupNameController =
+            TextEditingController();
+        File? selectedImage;
+
+        return _isLoading
+            ? const LoadingScreen()
+            : AlertDialog(
+                title: const Text('Add Group'),
+                content: StatefulBuilder(
+                  builder: (BuildContext context, StateSetter setState) {
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: groupNameController,
+                          decoration:
+                              const InputDecoration(labelText: 'Group Name'),
+                        ),
+                        const SizedBox(height: 16.0),
+                        GestureDetector(
+                          onTap: () async {
+                            final pickedFile =
+                                await _databaseService.selectPicture();
+                            if (pickedFile != null) {
+                              setState(() {
+                                selectedImage = File(pickedFile.path);
+                              });
+                            }
+                          },
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.rectangle,
+                                image: DecorationImage(
+                                  image: selectedImage != null
+                                      ? FileImage(selectedImage!)
+                                      : const AssetImage(
+                                              'assets/imgs/mini-1.png')
+                                          as ImageProvider<Object>,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                actions: [
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                  ElevatedButton(
+                    onPressed: () async {
+                      _toggleLoading();
+                      final groupName = groupNameController.text;
+                      if (groupName.isNotEmpty) {
+                        final userId = FirebaseAuth.instance.currentUser!.uid;
+                        final groupUsers = [userId];
+                        await DatabaseService()
+                            .addGroup(groupName, selectedImage, groupUsers);
+                        Navigator.of(context).pop();
+                        refreshGroups();
+                        _toggleLoading();
+                      }
+                    },
+                    child: const Text('Add'),
+                  ),
+                ],
+              );
+      },
+    );
+  }
+
+  void _toggleLoading() {
+    setState(() {
+      _isLoading = !_isLoading;
+    });
   }
 }

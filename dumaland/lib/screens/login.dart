@@ -36,9 +36,7 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[200],
-        leading: Lottie.network(
-          'https://assets6.lottiefiles.com/packages/lf20_jpxsQh.json',
-        ),
+        leading: Lottie.asset('assets/imgs/nyancat.json'),
         title: Text(
           _isSignUp ? 'Signing Up' : 'Welcome to WjbuVerse',
           style: const TextStyle(
@@ -60,10 +58,10 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Lottie.network(
-                        'https://assets1.lottiefiles.com/packages/lf20_a2chheio.json',
-                        width: 200,
-                        height: 200,
+                      Lottie.asset(
+                        'assets/imgs/login.json',
+                        width: 300,
+                        height: 300,
                       ),
                       TextField(
                         controller: _emailController,

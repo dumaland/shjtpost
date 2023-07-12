@@ -17,8 +17,8 @@ class _LoadingScreenState extends State<LoadingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.network(
-              'https://assets8.lottiefiles.com/packages/lf20_RDRegIf5XB.json',
+            Lottie.asset(
+              'assets/imgs/loading.json',
             ),
           ],
         ),

@@ -91,8 +91,7 @@ class _ProfileState extends State<Profile> {
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 0),
           children: <Widget>[
-            Lottie.network(
-                'https://lottie.host/9b8518cb-417e-4f50-bef7-e8109642573d/dnrWvzAvij.json'),
+            Lottie.asset('assets/imgs/nyancat.json'),
             Text(
               userName != "Change your name and avatar in settings"
                   ? 'Welcome ${userName ?? ''}'
