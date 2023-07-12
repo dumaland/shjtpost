@@ -36,14 +36,6 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue[200],
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings), // Replace with your desired icon
-            onPressed: () {
-              // Handle button press
-            },
-          ),
-        ],
         leading: Lottie.network(
           'https://assets6.lottiefiles.com/packages/lf20_jpxsQh.json',
         ),
@@ -105,102 +97,107 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ],
                       const SizedBox(height: 16.0),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white,
-                          backgroundColor:
-                              Colors.blue, // Set the button's text color
-                          elevation: 4, // Set the button's elevation
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 16.0,
-                              horizontal: 32.0), // Adjust the button's padding
-                        ),
-                        onPressed: () async {
-                          final String email = _emailController.text.trim();
-                          final String password = _passwordController.text;
-                          final String confirmPassword =
-                              _confirmPasswordController.text;
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            backgroundColor:
+                                Colors.blue, // Set the button's text color
+                            elevation: 4, // Set the button's elevation
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 16.0,
+                                horizontal:
+                                    32.0), // Adjust the button's padding
+                          ),
+                          onPressed: () async {
+                            final String email = _emailController.text.trim();
+                            final String password = _passwordController.text;
+                            final String confirmPassword =
+                                _confirmPasswordController.text;
 
-                          setState(() {
-                            _toggleLoading(); // Call _toggleLoading to start the loading state
-                            _errorMessage = null; // Reset the error message
-                          });
+                            setState(() {
+                              _toggleLoading(); // Call _toggleLoading to start the loading state
+                              _errorMessage = null; // Reset the error message
+                            });
 
-                          if (_isSignUp) {
-                            // Perform sign up logic
-                            if (password != confirmPassword) {
-                              setState(() {
-                                _errorMessage = 'Passwords do not match.';
-                                _toggleLoading(); // Call _toggleLoading to stop the loading state
-                              });
-                            } else if (password.length < 6) {
-                              setState(() {
-                                _errorMessage = 'Password is too short.';
-                                _toggleLoading(); // Call _toggleLoading to stop the loading state
-                              });
-                            } else {
-                              final bool isEmailTaken =
-                                  await _authenticationService
-                                      .checkIfEmailTaken(email);
-                              if (!isEmailTaken) {
+                            if (_isSignUp) {
+                              // Perform sign up logic
+                              if (password != confirmPassword) {
                                 setState(() {
-                                  _errorMessage = 'Email is invalid.';
+                                  _errorMessage = 'Passwords do not match.';
+                                  _toggleLoading(); // Call _toggleLoading to stop the loading state
+                                });
+                              } else if (password.length < 6) {
+                                setState(() {
+                                  _errorMessage = 'Password is too short.';
                                   _toggleLoading(); // Call _toggleLoading to stop the loading state
                                 });
                               } else {
-                                final bool success =
+                                final bool isEmailTaken =
                                     await _authenticationService
-                                        .signUpWithEmailAndPassword(
-                                            email, password);
-                                if (success) {
-                                  _showSignUpSuccessDialog();
-                                  _toggleLoading();
-                                } else {
+                                        .checkIfEmailTaken(email);
+                                if (!isEmailTaken) {
                                   setState(() {
-                                    _errorMessage = 'Failed to sign up.';
+                                    _errorMessage = 'Email is invalid.';
                                     _toggleLoading(); // Call _toggleLoading to stop the loading state
                                   });
+                                } else {
+                                  final bool success =
+                                      await _authenticationService
+                                          .signUpWithEmailAndPassword(
+                                              email, password);
+                                  if (success) {
+                                    _showSignUpSuccessDialog();
+                                    _toggleLoading();
+                                  } else {
+                                    setState(() {
+                                      _errorMessage = 'Failed to sign up.';
+                                      _toggleLoading(); // Call _toggleLoading to stop the loading state
+                                    });
+                                  }
                                 }
                               }
-                            }
-                          } else {
-                            // Perform sign in logic
-                            final BuildContext dialogContext = context;
-                            final String? uid = await _authenticationService
-                                .signInWithEmailAndPassword(email, password);
-                            if (uid != null) {
-                              // ignore: use_build_context_synchronously
-                              Navigator.pushReplacementNamed(context, '/home');
                             } else {
-                              // ignore: use_build_context_synchronously
-                              showDialog(
-                                context: dialogContext,
-                                builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: const Text('Login Failed'),
-                                    content: const Text(
-                                        'Check your email or password.'),
-                                    actions: [
-                                      TextButton(
-                                        child: const Text('OK'),
-                                        onPressed: () {
-                                          Navigator.of(dialogContext).pop();
-                                        },
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                              setState(() {
-                                _toggleLoading(); // Call _toggleLoading to stop the loading state
-                              });
+                              // Perform sign in logic
+                              final BuildContext dialogContext = context;
+                              final String? uid = await _authenticationService
+                                  .signInWithEmailAndPassword(email, password);
+                              if (uid != null) {
+                                // ignore: use_build_context_synchronously
+                                Navigator.pushReplacementNamed(
+                                    context, '/home');
+                              } else {
+                                // ignore: use_build_context_synchronously
+                                showDialog(
+                                  context: dialogContext,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Login Failed'),
+                                      content: const Text(
+                                          'Check your email or password.'),
+                                      actions: [
+                                        TextButton(
+                                          child: const Text('OK'),
+                                          onPressed: () {
+                                            Navigator.of(dialogContext).pop();
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                setState(() {
+                                  _toggleLoading(); // Call _toggleLoading to stop the loading state
+                                });
+                              }
                             }
-                          }
-                        },
-                        child: Text(
-                          _isSignUp ? 'Sign Up' : 'Login',
-                          style: const TextStyle(
-                            fontSize: 20,
+                          },
+                          child: Text(
+                            _isSignUp ? 'Sign Up' : 'Login',
+                            style: const TextStyle(
+                              fontSize: 20,
+                            ),
                           ),
                         ),
                       ),
@@ -301,47 +298,53 @@ class EmailInputDialog extends StatelessWidget {
       actions: [
         Align(
           alignment: Alignment.bottomCenter,
-          child: ElevatedButton(
-            onPressed: () async {
-              final String enteredEmail = _emailController.text;
-              final bool isEmailTaken =
-                  await _authenticationService.checkIfEmailTaken(enteredEmail);
-              if (isEmailTaken) {
-                await _authenticationService.resetPassword(enteredEmail);
-                // ignore: use_build_context_synchronously
-                Navigator.of(context).pop();
-                // ignore: use_build_context_synchronously
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Please check your email'),
-                  ),
-                );
-              } else {
-                // ignore: use_build_context_synchronously
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: const Text('Email not found'),
-                      content: const Text(
-                          'No user found with this email, please check again'),
-                      actions: [
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text('Close'),
+          child: SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final String enteredEmail = _emailController.text;
+                final bool isEmailTaken = await _authenticationService
+                    .checkIfEmailTaken(enteredEmail);
+                if (isEmailTaken) {
+                  await _authenticationService.resetPassword(enteredEmail);
+                  // ignore: use_build_context_synchronously
+                  Navigator.of(context).pop();
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please check your email'),
+                    ),
+                  );
+                } else {
+                  // ignore: use_build_context_synchronously
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text('Email not found'),
+                        content: const Text(
+                            'No user found with this email, please check again'),
+                        actions: [
+                          Align(
+                            alignment: Alignment.bottomCenter,
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('Close'),
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              }
-            },
-            child: const Text('Send password reset email'),
+                        ],
+                      );
+                    },
+                  );
+                }
+              },
+              child: const Text('Send password reset email'),
+            ),
           ),
         ),
       ],

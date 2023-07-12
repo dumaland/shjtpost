@@ -10,6 +10,8 @@ class DatabaseService {
     printer: PrettyPrinter(),
   );
 
+  Future<void> initializeSharedPreferences() async {}
+
   Future<void> addUser(
       String uid, String email, String password, String name) async {
     try {
@@ -44,7 +46,6 @@ class DatabaseService {
       final downloadUrl = await ref.getDownloadURL();
       return downloadUrl;
     } catch (e) {
-      // Handle any errors that may occur
       logger.d('Error getting user avatar: $e');
       return null;
     }
