@@ -12,7 +12,7 @@ class _SearchState extends State<Search> {
   Widget build(BuildContext context) {
     return const Scaffold(
         body: Center(
-      child: Text('Search'),
+      child: Text('Duma'),
     ));
   }
 }
