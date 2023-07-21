@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Search()),
+                MaterialPageRoute(builder: (context) => Search(user: widget.user)),
               );
             },
             icon: const Icon(
@@ -257,6 +257,19 @@ class _HomePageState extends State<HomePage> {
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
             leading: const Icon(Icons.groups),
             title: const Text('Home'),
+          ),
+          ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => Search(user: widget.user)),
+              );
+            },
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+            leading: const Icon(Icons.groups),
+            title: const Text('Search'),
           ),
           ListTile(
             onTap: () {
