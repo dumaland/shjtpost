@@ -171,4 +171,38 @@ class DatabaseService {
     }
     return null;
   }
+  Future<List<Map<String, dynamic>>> getAllGroups() async {
+  try {
+    final QuerySnapshot groupSnapshots =
+        await _firestore.collection('groups').get();
+
+    final List<Map<String, dynamic>> groups = [];
+
+    for (final groupDoc in groupSnapshots.docs) {
+      final groupId = groupDoc.id;
+
+      final DocumentSnapshot groupSnapshot =
+          await _firestore.collection('groups').doc(groupId).get();
+
+      if (groupSnapshot.exists) {
+        final groupData = groupSnapshot.data() as Map<String, dynamic>;
+        final String groupName = groupData['name'] as String? ?? '';
+        final String? groupAvatarUrl = groupData['avatarUrl'] as String?;
+
+        final Map<String, dynamic> groupInfo = {
+          'id': groupId,
+          'name': groupName,
+          'avatarUrl': groupAvatarUrl,
+        };
+        groups.add(groupInfo);
+      }
+    }
+
+    return groups;
+  } catch (e) {
+    logger.d('Error fetching all groups: $e');
+    return [];
+  }
+}
+
 }

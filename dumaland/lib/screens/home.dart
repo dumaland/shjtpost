@@ -255,7 +255,7 @@ class _HomePageState extends State<HomePage> {
             selected: true,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
+            leading: const Icon(Icons.person),
             title: const Text('Home'),
           ),
           ListTile(
@@ -268,7 +268,7 @@ class _HomePageState extends State<HomePage> {
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
+            leading: const Icon(Icons.search),
             title: const Text('Search'),
           ),
           ListTile(
@@ -406,6 +406,7 @@ class _HomePageState extends State<HomePage> {
                               const InputDecoration(labelText: 'Group Name'),
                         ),
                         const SizedBox(height: 16.0),
+                        const Text('Click the cat to choose group avatar'),
                         GestureDetector(
                           onTap: () async {
                             final pickedFile =

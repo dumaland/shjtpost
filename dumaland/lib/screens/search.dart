@@ -9,7 +9,6 @@ import 'package:dumaland/logic/data.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:io';
-
 import 'home.dart';
 
 class Search extends StatefulWidget {
@@ -27,35 +26,36 @@ class _SearchState extends State<Search> {
   PlatformFile? pickedfile;
   Stream<QuerySnapshot>? groupStream;
   String? userName;
-  String? avatarUrl;
-  List<String> groups = [];
+  String? avatarUrl;  
+  List<Map<String, dynamic>> groups = [];
+  List<Map<String, dynamic>> _chatRooms = [];
   File? selectedImage;
   File? groupAvatar;
   final TextEditingController _nameController = TextEditingController();
   Stream? group;
-  bool _isLoading = false;
+  bool _isLoading = false;  
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     loadUserInfo();
-    getUserGroups();
     refreshGroups();
   }
 
-  Future<void> refreshGroups() async {
-    if (widget.user != null) {
-      final uid = widget.user!.uid;
-      final userGroups = await _databaseService.getUserGroups(uid);
-      setState(() {
-        groupStream = FirebaseFirestore.instance
-            .collection('groups')
-            .where('members', arrayContains: uid)
-            .snapshots();
-        groups = userGroups;
-      });
-    }
+Future<void> refreshGroups() async {
+  if (widget.user != null) {
+    final userGroups = await _databaseService.getAllGroups();
+    setState(() {
+      groupStream = FirebaseFirestore.instance
+          .collection('groups')
+          .snapshots();
+      groups = userGroups; 
+    });
   }
+}
+
+
 
   void _openDrawer(BuildContext context) {
     Scaffold.of(context).openDrawer();
@@ -71,21 +71,35 @@ class _SearchState extends State<Search> {
         avatarUrl = userAvatarUrl;
       });
     }
+    
   }
 
-  Future<void> getUserGroups() async {
-    if (widget.user != null) {
-      final uid = widget.user!.uid;
-      final userGroups = await _databaseService.getUserGroups(uid);
-      setState(() {
-        groups = userGroups;
-      });
-    }
+void _onSearch() {
+  String searchTerm = _searchController.text.toLowerCase();
+  if (searchTerm.isEmpty) {
+    setState(() {
+      _chatRooms.clear();
+    });
+  } else {
+    setState(() {
+      _chatRooms = groups
+          .where((group) => group['name'].toLowerCase().startsWith(searchTerm))
+          .toList();
+    });
   }
+  if (_chatRooms.isEmpty) {
+    const snackBar = SnackBar(
+      content: Text('No room with the name provided'),
+      duration: Duration(seconds: 1),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+}  
 
   @override
   void dispose() {
     _nameController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -106,18 +120,7 @@ class _SearchState extends State<Search> {
           'Chat rooms',
           style: TextStyle(fontSize: 24),
         ),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Search()),
-              );
-            },
-            icon: const Icon(
-              Icons.search,
-            ),
-          ),
+        actions: [          
           GestureDetector(
             onTap: () {
               showDialog(
@@ -141,7 +144,7 @@ class _SearchState extends State<Search> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(
-                                    100), // Adjust the value to your desired roundness
+                                    100), 
                                 child: Container(
                                   width: 200,
                                   height: 200,
@@ -260,7 +263,7 @@ class _SearchState extends State<Search> {
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
+            leading: const Icon(Icons.person),
             title: const Text('Home'),
           ),
           ListTile(
@@ -269,7 +272,7 @@ class _SearchState extends State<Search> {
             selected: true,
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
+            leading: const Icon(Icons.search),
             title: const Text('Search'),
           ),
           ListTile(
@@ -302,8 +305,106 @@ class _SearchState extends State<Search> {
           ),
         ],
       )),
-      body: const Text('Search'),
-    );
+      body: _isLoading ? const LoadingScreen() : Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+
+              decoration: InputDecoration(
+                labelText: 'Search for chat rooms',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _onSearch,
+                ),
+              ),
+              onSubmitted: (_) => _onSearch(),
+            ),
+          ),
+          Expanded(
+            child: _chatRooms.isEmpty
+                ? StreamBuilder<QuerySnapshot>(
+                    stream: groupStream,
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return const LoadingScreen();
+                         }
+
+                      final chatRooms = snapshot.data!.docs;
+                      return ListView.builder(
+                        itemCount: chatRooms.length,
+                        itemBuilder: (context, index) {
+                          final chatRoom = chatRooms[index];
+                          return Container(
+                            decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                            child: ListTile(
+                              title: Text(chatRoom['name']),
+                              leading: chatRoom['avatarUrl'] != null
+                                  ? CircleAvatar(
+                                      backgroundImage:
+                                          NetworkImage(chatRoom['avatarUrl']),
+                                    )
+                                  : const CircleAvatar(
+                                      backgroundImage:
+                                          AssetImage('assets/imgs/mini-1.png'),
+                                    ),
+                              trailing: ElevatedButton(
+                                onPressed: () {
+                                  // Implement the join button logic here...
+                                },
+                                child: const Text('Join'),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  )
+                : SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    child: ListView.builder(
+                      itemCount: _chatRooms.length,
+                      itemBuilder: (context, index) {
+                        final chatRoom = _chatRooms[index];
+                        return Container(
+                          decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                          child: ListTile(
+                            title: Text(chatRoom['name']),
+                            leading: chatRoom['avatarUrl'] != null
+                                ? CircleAvatar(
+                                    backgroundImage:
+                                        NetworkImage(chatRoom['avatarUrl']),
+                                  )
+                                : const CircleAvatar(
+                                    backgroundImage:
+                                        AssetImage('assets/imgs/mini-1.png'),
+                                  ),
+                            trailing: ElevatedButton(
+                              onPressed: () {
+                                // Implement the join button logic here...
+                              },
+                              child: const Text('Join'),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );  
   }
     void _toggleLoading() {
     setState(() {

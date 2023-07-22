@@ -115,7 +115,7 @@ class _ProfileState extends State<Profile> {
               },
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-              leading: const Icon(Icons.groups),
+              leading: const Icon(Icons.person),
               title: const Text('Home'),
             ),
                                 ListTile(
@@ -128,7 +128,7 @@ class _ProfileState extends State<Profile> {
             },
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
+            leading: const Icon(Icons.search),
             title: const Text('Search'),
           ),
             ListTile(
