@@ -69,9 +69,12 @@ class _ProfileState extends State<Profile> {
           },
         ),
         backgroundColor: Colors.blue[200],
-        title: const Text(
-          'Profile',
-          style: TextStyle(fontSize: 24),
+        title: Transform.translate(
+          offset: const Offset(-20, 0),
+          child: const Text(
+            'Profile',
+            style: TextStyle(fontSize: 24),
+          ),
         ),
         actions: [
           IconButton(
@@ -177,7 +180,7 @@ class _ProfileState extends State<Profile> {
             ),
             const SizedBox(height: 16.0),
 
-            const Divider(height: 2),
+            const Divider(height: 3),
             const SizedBox(height: 16.0),
 
             // "Change user name and avatar" Text
@@ -220,6 +223,7 @@ class _ProfileState extends State<Profile> {
                 ),
               ),
             ),
+            const Text('Click to choose new avatar'),
             const SizedBox(height: 16.0),
             TextField(
               controller: _nameController,
@@ -228,6 +232,7 @@ class _ProfileState extends State<Profile> {
               ),
             ),
             const SizedBox(height: 16.0),
+            const Divider(height: 3),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -239,6 +244,7 @@ class _ProfileState extends State<Profile> {
                     _nameController.clear();
                     selectedImage = null;
                     await loadUserInfo();
+                    // ignore: use_build_context_synchronously
                     showDialog(
                       context: context,
                       builder: (BuildContext context) {
@@ -261,7 +267,6 @@ class _ProfileState extends State<Profile> {
                 child: const Text('Update Name and Avatar'),
               ),
             ),
-            const SizedBox(height: 16.0),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(

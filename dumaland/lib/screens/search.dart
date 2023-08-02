@@ -116,9 +116,12 @@ void _onSearch() {
           },
         ),
         backgroundColor: Colors.blue[200],
-        title: const Text(
-          'Chat rooms',
-          style: TextStyle(fontSize: 24),
+        title: Transform.translate(
+          offset: const Offset(-20, 0),
+          child: const Text(
+            'Room search',
+            style: TextStyle(fontSize: 24),
+          ),
         ),
         actions: [          
           GestureDetector(

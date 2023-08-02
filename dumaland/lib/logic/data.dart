@@ -205,4 +205,72 @@ class DatabaseService {
   }
 }
 
+Future<void> sendMessage(String groupId, String message, String senderId, String senderName) async {
+  try {
+    final timestamp = FieldValue.serverTimestamp();
+    await _firestore.collection('groups').doc(groupId).collection('messages').add({
+      'message': message,
+      'senderId': senderId,
+      'senderName': senderName, 
+      'timestamp': timestamp,
+    });
+  } catch (e) {
+    logger.d('Error sending message: $e');
+  }
 }
+
+Future<String> getSenderName(String senderId) async {
+  try {
+    final snapshot = await _firestore.collection('users').doc(senderId).get();
+    if (snapshot.exists) {
+      final data = snapshot.data() as Map<String, dynamic>;
+      return data['name'] as String? ?? '';
+    }
+    return '';
+  } catch (e) {
+    logger.d('Error fetching sender name: $e');
+    return '';
+  }
+}
+
+Stream<List<Message>> getMessagesStream(String groupId) {
+  try {
+    return _firestore
+        .collection('groups')
+        .doc(groupId)
+        .collection('messages')
+        .orderBy('timestamp', descending: true)
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+            .map((doc) => Message.fromMap(doc.data() as Map<String, dynamic>))
+            .toList());
+  } catch (e) {
+    logger.d('Error fetching messages: $e');
+    return Stream.value([]); 
+  }
+}
+}
+
+class Message {
+  final String message;
+  final String senderId;
+  final String senderName; 
+  final DateTime timestamp;
+
+  Message({
+    required this.message,
+    required this.senderId,
+    required this.senderName, 
+    required this.timestamp,
+  });
+
+  factory Message.fromMap(Map<String, dynamic> map) {
+    return Message(
+      message: map['message'] ?? '',
+      senderId: map['senderId'] ?? '',
+      senderName: map['senderName'] ?? '', 
+      timestamp: (map['timestamp'] as Timestamp).toDate(),
+    );
+  }
+}
+
