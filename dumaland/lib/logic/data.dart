@@ -81,10 +81,27 @@ class DatabaseService {
     return null;
   }
 
+  Future<void> updateGroup(String groupId, String groupName, File? picture) async {
+  try {
+    final groupRef = _firestore.collection('groups').doc(groupId);
+    await groupRef.update({'name': groupName});
+    if (picture != null) {
+      final storageRef = FirebaseStorage.instance.ref().child('group_avatars/$groupId.jpg');
+      await storageRef.putFile(picture);
+      final avatarUrl = await storageRef.getDownloadURL();
+      await groupRef.update({'avatarUrl': avatarUrl});
+    }
+
+    logger.d('Group updated successfully');
+  } catch (e) {
+    logger.d('Error updating group: $e');
+  }
+}
+
+
   Future<void> updateUser(String uid, String name, File? picture) async {
     try {
       await _firestore.collection('users').doc(uid).update({'name': name});
-
       if (picture != null) {
         final storageRef =
             FirebaseStorage.instance.ref().child('avatars/$uid.jpg');
