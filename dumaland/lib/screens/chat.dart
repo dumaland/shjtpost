@@ -14,15 +14,19 @@ import 'package:dumaland/logic/authentication.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_chat_bubble/chat_bubble.dart';
 
-
 class ChatRoom extends StatefulWidget {
   final String groupId;
-  final String groupName;
-  final String groupAvatarUrl;
+  String groupName;
+  String groupAvatarUrl;
   final User? user;
 
-  const ChatRoom({Key? key, required this.groupId, required this.groupName, required this.groupAvatarUrl, this.user})
-      : super(key: key);
+   ChatRoom({
+    Key? key,
+    required this.groupId,
+    required this.groupName,
+    required this.groupAvatarUrl,
+    this.user,
+  }) : super(key: key);
 
   @override
   _ChatRoomState createState() => _ChatRoomState();
@@ -32,7 +36,7 @@ class _ChatRoomState extends State<ChatRoom> {
   final Logger logger = Logger(
     printer: PrettyPrinter(),
   );
-  
+
   final DatabaseService _databaseService = DatabaseService();
   final AuthenticationService _authenticationService = AuthenticationService();
   PlatformFile? pickedfile;
@@ -42,12 +46,18 @@ class _ChatRoomState extends State<ChatRoom> {
   final TextEditingController _nameController = TextEditingController();
   bool _isLoading = false;
   final TextEditingController _messageController = TextEditingController();
+    final TextEditingController _groupNameController = TextEditingController();
 
   void _sendMessage() {
     final message = _messageController.text.trim();
     final name = userName ?? '';
     if (message.isNotEmpty) {
-      _databaseService.sendMessage(widget.groupId, message, widget.user!.uid, name);
+      _databaseService.sendMessage(
+        widget.groupId,
+        message,
+        widget.user!.uid,
+        name,
+      );
       _messageController.clear();
     }
   }
@@ -79,6 +89,22 @@ class _ChatRoomState extends State<ChatRoom> {
     _nameController.dispose();
     super.dispose();
   }
+  
+  Future<void> _leaveGroup() async {
+    final userId = widget.user?.uid;
+    if (userId != null) {
+      await _databaseService.leaveGroup(widget.groupId, userId);
+      setState(() {
+        loadUserInfo();
+      });
+    }
+    Navigator.of(context).pop();
+    Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => HomePage(user: widget.user)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -96,13 +122,18 @@ class _ChatRoomState extends State<ChatRoom> {
         title: Padding(
           padding: const EdgeInsets.only(left: 0),
           child: Transform.translate(
-             offset: const Offset(-20, 0),
+            offset: const Offset(-20, 0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 25,
-                  backgroundImage: NetworkImage(widget.groupAvatarUrl),
+                GestureDetector(
+                   onTap: () {
+    _showGroupSettingsDialog(context);
+  },
+                  child: CircleAvatar(
+                    radius: 25,
+                    backgroundImage: NetworkImage(widget.groupAvatarUrl),
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(
@@ -119,7 +150,7 @@ class _ChatRoomState extends State<ChatRoom> {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return AlertDialog(
+                  return _isLoading ? const LoadingScreen() : AlertDialog(
                     content: StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
                         return Column(
@@ -137,7 +168,7 @@ class _ChatRoomState extends State<ChatRoom> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(
-                                    100),
+                                    100), 
                                 child: Container(
                                   width: 200,
                                   height: 200,
@@ -163,6 +194,9 @@ class _ChatRoomState extends State<ChatRoom> {
                               ),
                             ),
                             const SizedBox(height: 16.0),
+                                 const Divider(
+                            height: 2,
+                            ),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -170,6 +204,7 @@ class _ChatRoomState extends State<ChatRoom> {
                                   if (_nameController.text.isNotEmpty) {
                                     final uid = widget.user!.uid;
                                     final name = _nameController.text;
+                                     _toggleLoading;
                                     await _databaseService.updateUser(
                                         uid, name, selectedImage);
                                     _nameController.clear();
@@ -177,6 +212,7 @@ class _ChatRoomState extends State<ChatRoom> {
                                     await loadUserInfo();
                                     // ignore: use_build_context_synchronously
                                     Navigator.pop(context);
+                                    _toggleLoading;
                                   }
                                 },
                                 child:
@@ -229,164 +265,309 @@ class _ChatRoomState extends State<ChatRoom> {
         ],
       ),
       drawer: Drawer(
-          child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 0),
-        children: <Widget>[
-          Lottie.asset('assets/imgs/nyancat.json'),
-          Text(
-            userName != "Change ur name and avatar in settings"
-                ? 'Welcome ${userName ?? ''}'
-                : "Change ur name and avatar in settings",
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-          ),
-          const SizedBox(
-            height: 30,
-          ),
-          const Divider(
-            height: 2,
-          ),
-          ListTile(
-            onTap: () {Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => HomePage(user: widget.user)),
-              );},
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.person),
-            title: const Text('Home'),
-          ),
-          ListTile(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Search(user: widget.user)),
-              );
-            },
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.search),
-            title: const Text('Search'),
-          ),
-          ListTile(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Profile(user: widget.user)),
-              );
-            },
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.groups),
-            title: const Text('Profile'),
-          ),
-          ListTile(
-            onTap: () async {
-              FirebaseAuth.instance.signOut();
-              await _authenticationService.signOut();
-              // ignore: use_build_context_synchronously
-              Navigator.pushReplacementNamed(
-                context,
-                '/login',
-              );
-            },
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-            leading: const Icon(Icons.exit_to_app),
-            title: const Text('Logout'),
-          ),
-        ],
-      )),
-      body: _isLoading ? const LoadingScreen() : Column(
-        children: [
-          Expanded(
-            child: StreamBuilder<List<Message>>(
-  stream: _databaseService.getMessagesStream(widget.groupId),
-  builder: (context, snapshot) {
-    if (snapshot.hasData) {
-      final messages = snapshot.data;
-      return ListView.builder(
-        reverse: true,
-        itemCount: messages?.length ?? 0,
-        itemBuilder: (context, index) {
-          final message = messages![index];
-          final isCurrentUser = message.senderId == widget.user?.uid; // The identity check you've provided
-          return FutureBuilder<String?>(
-            future: _databaseService.getUserName(message.senderId),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final senderName = snapshot.data!;
-                return ChatBubble(
-                  clipper: ChatBubbleClipper4(type: isCurrentUser ? BubbleType.sendBubble : BubbleType.receiverBubble),
-                  alignment: isCurrentUser ? Alignment.topRight : Alignment.topLeft,
-                  margin: const EdgeInsets.only(top: 20),
-                  backGroundColor: isCurrentUser ? const Color(0xff2b9ed4) : const Color.fromARGB(0, 92, 89, 89),
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 0),
+          children: <Widget>[
+            Lottie.asset('assets/imgs/nyancat.json'),
+            Text(
+              userName != "Change ur name and avatar in settings"
+                  ? 'Welcome ${userName ?? ''}'
+                  : "Change ur name and avatar in settings",
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            const Divider(
+              height: 2,
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(user: widget.user),
+                  ),
+                );
+              },
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: const Icon(Icons.person),
+              title: const Text('Home'),
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Search(user: widget.user),
+                  ),
+                );
+              },
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: const Icon(Icons.search),
+              title: const Text('Search'),
+            ),
+            ListTile(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Profile(user: widget.user),
+                  ),
+                );
+              },
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: const Icon(Icons.groups),
+              title: const Text('Profile'),
+            ),
+            ListTile(
+              onTap: () async {
+                FirebaseAuth.instance.signOut();
+                await _authenticationService.signOut();
+                Navigator.pushReplacementNamed(
+                  context,
+                  '/login',
+                );
+              },
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
+              leading: const Icon(Icons.exit_to_app),
+              title: const Text('Logout'),
+            ),
+          ],
+        ),
+      ),
+      body: _isLoading
+          ? const LoadingScreen()
+          : Column(
+              children: [
+                Expanded(
+                  child: StreamBuilder<List<Message>>(
+                    stream: _databaseService.getMessagesStream(widget.groupId),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        final messages = snapshot.data;
+                        return ListView.builder(
+                          reverse: true,
+                          itemCount: messages?.length ?? 0,
+                          itemBuilder: (context, index) {
+                            final message = messages![index];
+                            final isCurrentUser =
+                                message.senderId == widget.user?.uid;
+                            return FutureBuilder<String?>(
+                              future: _databaseService.getUserName(
+                                  message.senderId),
+                              builder: (context, snapshot) {
+                                if (snapshot.hasData) {
+                                  final senderName = snapshot.data!;
+                                  return ChatBubble(
+                                    clipper: ChatBubbleClipper4(
+                                      type: isCurrentUser
+                                          ? BubbleType.sendBubble
+                                          : BubbleType.receiverBubble,
+                                    ),
+                                    alignment: isCurrentUser
+                                        ? Alignment.topRight
+                                        : Alignment.topLeft,
+                                    margin: const EdgeInsets.only(top: 20),
+                                    backGroundColor: isCurrentUser
+                                        ? const Color(0xff2b9ed4)
+                                        : const Color.fromARGB(0, 92, 89, 89),
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                        maxWidth:
+                                            MediaQuery.of(context).size.width *
+                                                0.7,
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            message.message,
+                                            style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 22),
+                                          ),
+                                          const SizedBox(height: 4.0),
+                                          Text(
+                                            senderName,
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 10.0),
+                                          ),
+                                          const SizedBox(height: 2.0),
+                                          Text(
+                                            DateFormat('MMM d, yyyy - HH:mm')
+                                                .format(
+                                              message.timestamp.toLocal(),
+                                            ),
+                                            style: const TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 10.0),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return const ListTile(
+                                    title: Text('Unknown Sender'),
+                                    subtitle: Text('Loading...'),
+                                    trailing: CircularProgressIndicator(),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        );
+                      } else {
+                        return const LoadingScreen();
+                      }
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
                   child: Container(
-                    constraints: BoxConstraints(
-                      maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      color: Colors.grey[100],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(message.message, style: const TextStyle(color: Colors.white, fontSize: 22)),
-                        const SizedBox(height: 4.0),
-                        Text(senderName, style: const TextStyle(color: Colors.black, fontSize: 10.0)),
-                        const SizedBox(height: 2.0),
-                        Text(DateFormat('MMM d, yyyy - HH:mm').format(message.timestamp.toLocal()), style: const TextStyle(color: Colors.black, fontSize: 10.0)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _messageController,
+                            decoration: const InputDecoration(
+                              hintText: 'Type your message...',
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.all(12),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: _sendMessage,
+                          icon: const Icon(Icons.send),
+                        ),
                       ],
                     ),
                   ),
-                );
-              } else {
-                return const ListTile(
-                  title: Text('Unknown Sender'),
-                  subtitle: Text('Loading...'),
-                  trailing: CircularProgressIndicator(),
-                );
-              }
-            },
-          );
-        },
-      );
-    } else {
-      return const LoadingScreen();
-    }
-  },
-)
-          ),          
-          Padding(
-   padding: const EdgeInsets.all(8.0),
-  child: Container(
-    decoration: BoxDecoration(
-      border: Border.all(color: Colors.grey), 
-      color: Colors.grey[100], 
-    ),
-    child: Row(
-      children: [
-        Expanded(
-          child: TextField(
-            controller: _messageController,
-            decoration: const InputDecoration(
-              hintText: 'Type your message...',
-              border: InputBorder.none, 
-              contentPadding: EdgeInsets.all(12),
+                ),
+              ],
             ),
-          ),
-        ),
-        IconButton(
-          onPressed: _sendMessage,
-          icon: const Icon(Icons.send),
-        ),
-      ],
-    ),
-  ),
-),
-
-        ],
-      ),
     );
+  }
+  void _showGroupSettingsDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return _isLoading ? const LoadingScreen() : AlertDialog(
+        content: StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return Column(
+              children: [
+                const Text('Click to choose a new group avatar'),
+                GestureDetector(
+                  onTap: () async {
+                    final pickedFile = await _databaseService.selectPicture();
+                    if (pickedFile != null) {
+                      setState(() {
+                        selectedImage = pickedFile;
+                      });
+                    }
+                  },
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Container(
+                      width: 200,
+                      height: 200,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.rectangle,
+                        image: DecorationImage(
+                          image: selectedImage != null
+                              ? FileImage(selectedImage!) as ImageProvider<Object>
+                              : NetworkImage(widget.groupAvatarUrl),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _groupNameController,
+                  decoration: textinputdecorations.copyWith(
+                    labelText: 'Group Name',
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                const Divider(
+                  height: 2,
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      if (_groupNameController.text.isNotEmpty) {
+                        final groupId = widget.groupId;
+                        final groupName = _groupNameController.text;
+                         _toggleLoading;
+                        await _databaseService.updateGroup(
+                            groupId, groupName, selectedImage);
+                        _groupNameController.clear();
+                        selectedImage = null;
+                        Navigator.pop(context); 
+                        setState(() {
+                          widget.groupName = groupName;
+                          widget.groupAvatarUrl = selectedImage != null
+                              ? selectedImage!.path
+                              : widget.groupAvatarUrl;
+                         _toggleLoading;
+                         Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => HomePage(user: widget.user),
+                  ),
+                );
+                        });
+                      }
+                    },
+                    child: const Text('Update Group Name and Avatar'),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _leaveGroup,
+                    child: const Text('Leave room'),
+                  ),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close the AlertDialog
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                )
+              ],
+            );
+          },
+        ),
+      );
+    },
+  );
+} 
+void _toggleLoading() {
+    setState(() {
+      _isLoading = !_isLoading;
+    });
   }
 }

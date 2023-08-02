@@ -1,3 +1,4 @@
+import 'package:dumaland/screens/loading.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:dumaland/screens/search.dart';
@@ -6,7 +7,6 @@ import 'package:lottie/lottie.dart';
 import 'package:dumaland/logic/data.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
-
 import '../logic/authentication.dart';
 import 'home.dart';
 
@@ -27,6 +27,7 @@ class _ProfileState extends State<Profile> {
   String? avatarUrl;
   File? selectedImage;
   final TextEditingController _nameController = TextEditingController();
+  bool _isLoading=false;
 
   void _openDrawer(BuildContext context) {
     Scaffold.of(context).openDrawer();
@@ -157,7 +158,7 @@ class _ProfileState extends State<Profile> {
           ],
         ),
       ),
-      body: SingleChildScrollView(
+      body: _isLoading ? const LoadingScreen() : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -240,10 +241,12 @@ class _ProfileState extends State<Profile> {
                   if (_nameController.text.isNotEmpty) {
                     final uid = widget.user!.uid;
                     final name = _nameController.text;
+                    _toggleLoading;
                     await _databaseService.updateUser(uid, name, selectedImage);
                     _nameController.clear();
                     selectedImage = null;
                     await loadUserInfo();
+                    _toggleLoading;
                     // ignore: use_build_context_synchronously
                     showDialog(
                       context: context,
@@ -282,5 +285,10 @@ class _ProfileState extends State<Profile> {
         ),
       ),
     );
+  }
+  void _toggleLoading() {
+    setState(() {
+      _isLoading = !_isLoading;
+    });
   }
 }

@@ -144,7 +144,7 @@ class _HomePageState extends State<HomePage> {
                               },
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(
-                                    100), // Adjust the value to your desired roundness
+                                    100), 
                                 child: Container(
                                   width: 200,
                                   height: 200,
@@ -170,6 +170,9 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                             const SizedBox(height: 16.0),
+                                 const Divider(
+            height: 2,
+          ),
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
@@ -177,11 +180,13 @@ class _HomePageState extends State<HomePage> {
                                   if (_nameController.text.isNotEmpty) {
                                     final uid = widget.user!.uid;
                                     final name = _nameController.text;
+                                    _toggleLoading;
                                     await _databaseService.updateUser(
                                         uid, name, selectedImage);
                                     _nameController.clear();
                                     selectedImage = null;
                                     await loadUserInfo();
+                                    _toggleLoading;
                                     // ignore: use_build_context_synchronously
                                     Navigator.pop(context);
                                   }

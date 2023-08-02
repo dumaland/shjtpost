@@ -1,3 +1,4 @@
+import 'package:dumaland/screens/chat.dart';
 import 'package:dumaland/screens/loading.dart';
 import 'package:dumaland/screens/profile.dart';
 import 'package:flutter/material.dart';
@@ -129,7 +130,7 @@ void _onSearch() {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
-                  return AlertDialog(
+                  return _isLoading ? const LoadingScreen() :AlertDialog(
                     content: StatefulBuilder(
                       builder: (BuildContext context, StateSetter setState) {
                         return Column(
@@ -339,7 +340,11 @@ void _onSearch() {
   itemCount: chatRooms.length,
   itemBuilder: (context, index) {
     final chatRoom = chatRooms[index];
-    bool isMember = chatRoom['members'].contains(widget.user!.uid);    
+    bool isMember = chatRoom['members'].contains(widget.user!.uid);
+    String groupId = chatRoom['id'];
+    String groupName = chatRoom['name'];
+    String? avatarUrl = chatRoom['avatarUrl'];
+
     return Container(
       decoration: BoxDecoration(
         border: Border.all(color: Colors.grey),
@@ -357,7 +362,22 @@ void _onSearch() {
                 backgroundImage: AssetImage('assets/imgs/mini-1.png'),
               ),
         trailing: isMember
-            ? const Text('Joined')
+            ? ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ChatRoom(
+                        groupId: groupId,
+                        groupName: groupName,
+                        groupAvatarUrl: avatarUrl!,
+                        user: FirebaseAuth.instance.currentUser,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              )
             : ElevatedButton(
                 onPressed: () async {
                   String groupId = chatRoom['id'];
@@ -380,6 +400,7 @@ void _onSearch() {
     );
   },
 );
+
                     },
                   )
                 : SizedBox(
