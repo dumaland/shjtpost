@@ -470,9 +470,8 @@ class _HomePageState extends State<HomePage> {
                       final groupName = groupNameController.text;
                       if (groupName.isNotEmpty) {
                         final userId = FirebaseAuth.instance.currentUser!.uid;
-                        final groupUsers = [userId];
                         await DatabaseService()
-                            .addGroup(groupName, selectedImage, groupUsers);
+                            .addGroup(groupName, selectedImage, userId);
                         Navigator.of(context).pop();
                         refreshGroups();
                         _toggleLoading();

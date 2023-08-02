@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
@@ -101,60 +100,83 @@ class DatabaseService {
     }
   }
 
-  Future<void> addGroup(
-      String groupName, File? groupAvatar, List<String> groupUsers) async {
-    try {
-      final DocumentReference groupRef = _firestore.collection('groups').doc();
-      final groupId = groupRef.id;
+  Future<void> addGroup(String groupName, File? selectedImage, String userId) async {
+  try {
+    final DocumentReference groupRef = _firestore.collection('groups').doc();
+    final groupId = groupRef.id;
 
-      String? avatarUrl;
-      if (groupAvatar != null) {
-        final storageRef =
-            FirebaseStorage.instance.ref().child('group_avatars/$groupId.jpg');
-        await storageRef.putFile(groupAvatar);
-        avatarUrl = await storageRef.getDownloadURL();
-      }
-
-      await groupRef.set({
-        'id': groupId,
-        'name': groupName,
-        'avatarUrl': avatarUrl,
-        'members': groupUsers,
-      });
-
-      final userId = FirebaseAuth.instance.currentUser!.uid;
-
-      for (final user in groupUsers) {
-        final groupUserRef = _firestore
-            .collection('users')
-            .doc(user)
-            .collection('groups')
-            .doc(groupId);
-
-        await groupUserRef.set({});
-      }
-
-      // Add the current user to the group users
-      final currentUserGroupRef = _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('groups')
-          .doc(groupId);
-
-      await currentUserGroupRef.set({});
-
-      // Add the new group to the user's list of groups
-      final userGroupsRef =
-          _firestore.collection('users').doc(userId).collection('groups');
-
-      await userGroupsRef.doc(groupId).set({});
-
-      logger.d('Group added successfully');
-    } catch (e) {
-      logger.d('Error adding group: $e');
+    String? avatarUrl;
+    if (selectedImage != null) {
+      final storageRef =
+          FirebaseStorage.instance.ref().child('group_avatars/$groupId.jpg');
+      await storageRef.putFile(selectedImage);
+      avatarUrl = await storageRef.getDownloadURL();
     }
+
+    await groupRef.set({
+      'id': groupId,
+      'name': groupName,
+      'avatarUrl': avatarUrl,
+      'members': [userId],
+    });
+
+    // Create a new subcollection for the user and add the group ID
+    final userGroupsRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('groups')
+        .doc(groupId);
+
+    await userGroupsRef.set({});
+
+    logger.d('Group added successfully');
+  } catch (e) {
+    logger.d('Error adding group: $e');
+  }
   }
 
+Future<void> joinGroup(String groupId, String userId) async {
+  try {
+    final groupRef = _firestore.collection('groups').doc(groupId);
+    await groupRef.update({
+      'members': FieldValue.arrayUnion([userId]),
+    });
+
+    final userGroupsRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('groups')
+        .doc(groupId);
+
+    await userGroupsRef.set({});
+
+    logger.d('Joined the group successfully');
+  } catch (e) {
+    logger.d('Error joining the group: $e');
+  }
+}
+
+Future<void> leaveGroup(String groupId, String userId) async {
+  try {
+    final groupRef = _firestore.collection('groups').doc(groupId);
+    await groupRef.update({
+      'members': FieldValue.arrayRemove([userId]),
+    });
+
+    final userGroupsRef = _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('groups')
+        .doc(groupId);
+
+    await userGroupsRef.delete();
+
+    logger.d('Left the group successfully');
+  } catch (e) {
+    logger.d('Error leaving the group: $e');
+  }
+}
+  
   Future<Map<String, dynamic>?> getGroupInfo(String groupId) async {
     try {
       final DocumentSnapshot snapshot =

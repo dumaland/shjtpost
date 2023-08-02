@@ -213,7 +213,7 @@ void _onSearch() {
                               child: ElevatedButton(
                                   onPressed: () {
                                     Navigator.pop(
-                                        context); // Close the AlertDialog
+                                        context);
                                   },
                                   child: const Text('Close')),
                             )
@@ -336,37 +336,50 @@ void _onSearch() {
 
                       final chatRooms = snapshot.data!.docs;
                       return ListView.builder(
-                        itemCount: chatRooms.length,
-                        itemBuilder: (context, index) {
-                          final chatRoom = chatRooms[index];
-                          return Container(
-                            decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  margin: const EdgeInsets.all(8),
-                  padding: const EdgeInsets.all(8),
-                            child: ListTile(
-                              title: Text(chatRoom['name']),
-                              leading: chatRoom['avatarUrl'] != null
-                                  ? CircleAvatar(
-                                      backgroundImage:
-                                          NetworkImage(chatRoom['avatarUrl']),
-                                    )
-                                  : const CircleAvatar(
-                                      backgroundImage:
-                                          AssetImage('assets/imgs/mini-1.png'),
-                                    ),
-                              trailing: ElevatedButton(
-                                onPressed: () {
-                                  // Implement the join button logic here...
-                                },
-                                child: const Text('Join'),
-                              ),
-                            ),
-                          );
-                        },
-                      );
+  itemCount: chatRooms.length,
+  itemBuilder: (context, index) {
+    final chatRoom = chatRooms[index];
+    bool isMember = chatRoom['members'].contains(widget.user!.uid);    
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
+      child: ListTile(
+        title: Text(chatRoom['name']),
+        leading: chatRoom['avatarUrl'] != null
+            ? CircleAvatar(
+                backgroundImage: NetworkImage(chatRoom['avatarUrl']),
+              )
+            : const CircleAvatar(
+                backgroundImage: AssetImage('assets/imgs/mini-1.png'),
+              ),
+        trailing: isMember
+            ? const Text('Joined')
+            : ElevatedButton(
+                onPressed: () async {
+                  String groupId = chatRoom['id'];
+                  String userId = widget.user!.uid;
+                  _toggleLoading();
+                  await _databaseService.joinGroup(groupId, userId);
+                  await refreshGroups();
+                  _toggleLoading();
+                  // ignore: use_build_context_synchronously
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('You have joined the group.'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
+                },
+                child: const Text('Join'),
+              ),
+      ),
+    );
+  },
+);
                     },
                   )
                 : SizedBox(
